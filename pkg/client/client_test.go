@@ -9,28 +9,24 @@ import (
 )
 
 func TestNewClient(t *testing.T) {
-	apiKey := "test-api-key"
-	client := NewClient(apiKey)
+	client := NewClient()
 
-	assert.Equal(t, apiKey, client.APIKey)
 	assert.Equal(t, DefaultBaseURL, client.BaseURL)
 	assert.NotNil(t, client.HTTPClient)
 	assert.Equal(t, DefaultTimeout, client.HTTPClient.Timeout)
 }
 
 func TestNewClientWithConfig(t *testing.T) {
-	apiKey := "test-api-key"
 	baseURL := "https://custom.simbrief.com"
 
-	client := NewClientWithConfig(apiKey, baseURL, nil)
+	client := NewClientWithConfig(baseURL, nil)
 
-	assert.Equal(t, apiKey, client.APIKey)
 	assert.Equal(t, baseURL, client.BaseURL)
 	assert.NotNil(t, client.HTTPClient)
 }
 
 func TestValidateFlightPlanRequest(t *testing.T) {
-	client := NewClient("test-key")
+	client := NewClient()
 
 	tests := []struct {
 		name    string
@@ -123,7 +119,7 @@ func TestValidateFlightPlanRequest(t *testing.T) {
 }
 
 func TestGenerateFlightPlanURL(t *testing.T) {
-	client := NewClient("test-api-key")
+	client := NewClient()
 
 	request := &types.FlightPlanRequest{
 		Origin:       "KJFK",
@@ -143,11 +139,12 @@ func TestGenerateFlightPlanURL(t *testing.T) {
 	assert.Contains(t, url, "route=HAPIE6+HAPIE+J174+COATE")
 	assert.Contains(t, url, "airline=UAL")
 	assert.Contains(t, url, "fltnum=1234")
-	assert.Contains(t, url, "api_key=test-api-key")
+	// API key is no longer included in URLs
+	assert.NotContains(t, url, "api_key")
 }
 
 func TestGetDirectEditURL(t *testing.T) {
-	client := NewClient("test-key")
+	client := NewClient()
 	staticID := "UAL_1234_TEST"
 
 	url := client.GetDirectEditURL(staticID)

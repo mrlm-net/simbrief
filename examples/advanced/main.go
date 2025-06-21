@@ -11,7 +11,7 @@ import (
 
 func main() {
 	// This example demonstrates advanced SimBrief SDK features
-	simbrief := client.NewClient("")
+	simbrief := client.NewClient()
 
 	userID := os.Getenv("SIMBRIEF_USER_ID")
 	if userID == "" {

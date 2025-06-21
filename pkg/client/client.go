@@ -28,15 +28,13 @@ const (
 
 // Client represents a SimBrief API client
 type Client struct {
-	APIKey     string
 	BaseURL    string
 	HTTPClient *http.Client
 }
 
 // NewClient creates a new SimBrief API client
-func NewClient(apiKey string) *Client {
+func NewClient() *Client {
 	return &Client{
-		APIKey:  apiKey,
 		BaseURL: DefaultBaseURL,
 		HTTPClient: &http.Client{
 			Timeout: DefaultTimeout,
@@ -45,7 +43,7 @@ func NewClient(apiKey string) *Client {
 }
 
 // NewClientWithConfig creates a new SimBrief API client with custom configuration
-func NewClientWithConfig(apiKey, baseURL string, httpClient *http.Client) *Client {
+func NewClientWithConfig(baseURL string, httpClient *http.Client) *Client {
 	if baseURL == "" {
 		baseURL = DefaultBaseURL
 	}
@@ -54,7 +52,6 @@ func NewClientWithConfig(apiKey, baseURL string, httpClient *http.Client) *Clien
 	}
 
 	return &Client{
-		APIKey:     apiKey,
 		BaseURL:    baseURL,
 		HTTPClient: httpClient,
 	}
@@ -155,12 +152,6 @@ func (c *Client) GetSupportedOptions() (*types.SupportedOptions, error) {
 // Note: Actual flight plan generation requires browser popup authentication
 func (c *Client) GenerateFlightPlanURL(req *types.FlightPlanRequest) string {
 	values := req.ToURLValues()
-
-	// Add API key if available
-	if c.APIKey != "" {
-		values.Add("api_key", c.APIKey)
-	}
-
 	return c.BaseURL + endpointGenerate + "?" + values.Encode()
 }
 

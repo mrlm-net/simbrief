@@ -11,8 +11,8 @@ import (
 
 func main() {
 	// Initialize the SimBrief client
-	// Note: API key is not required for fetching existing flight plans
-	simbrief := client.NewClient("")
+	// Note: No API key required for basic operations like fetching aircraft types
+	simbrief := client.NewClient()
 
 	// Example 1: Get supported aircraft types and layouts
 	fmt.Println("=== Getting Supported Options ===")
