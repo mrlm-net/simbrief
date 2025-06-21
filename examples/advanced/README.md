@@ -153,52 +153,52 @@ Advanced flight plan URL: https://www.simbrief.com/system/dispatch.php?origin=KJ
 === Detailed Flight Plan Analysis ===
 Flight Plan Analysis for 857341
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Route: KJFK → EGLL
-Origin: John F Kennedy Intl (KJFK) - New York, United States
-Destination: London Heathrow (EGLL) - London, United Kingdom
+Route: LIRF → LFBO
+Origin: FIUMICINO (LIRF) - Rome, Italy
+Destination: BLAGNAC (LFBO) - Toulouse, France
 
-Aircraft: Boeing 777-200LR (B77L)
-Registration: N787BA
-Engine: GE90-110B1
+Aircraft: A320-251N (A20N)
+Registration: G-INEO
+Engine: CFM LEAP-1A
 
 Flight Planning:
-Distance: 3459 nm
-Route: HAPIE6 HAPIE N247A ALLRY DCT KANNI N866B BEXET UL9 BOGNA UL607 REDFA
-Cruise Altitude: FL380
-Cost Index: 100
+Distance: 532 nm
+Route: POD9E PODOX T246 MIRSA DCT OMARD DCT STP DCT PADKO UL127 FJR DCT AFRIC AFRI8N
+Cruise Altitude: FL320
+Cost Index: 5
 
 Timing:
-Flight Time: 07:45
-Block Time: 08:15
-Taxi Out: 15 min
-Taxi In: 15 min
+Flight Time: 01:27
+Block Time: 01:37
+Taxi Out: 5 min
+Taxi In: 5 min
 
-Weight & Balance (LBS):
-Operating Empty Weight: 346500
-Zero Fuel Weight: 438900
-Takeoff Weight: 766000
-Landing Weight: 445200
-Payload: 92400 (Pax: 340 @ 190)
+Weight & Balance (KGS):
+Operating Empty Weight: 42500
+Zero Fuel Weight: 57298
+Takeoff Weight: 62442
+Landing Weight: 59577
+Payload: 14798 (Pax: 151 @ 85)
 
-Fuel Planning (LBS):
-Total Planned: 327100
-Trip Fuel: 281300
-Taxi Fuel: 2800
-Alternate Fuel: 18500
-Contingency: 8400
-Reserve: 13100
-Extra: 3000
-Average Flow: 36280
+Fuel Planning (KGS):
+Total Planned: 5374
+Trip Fuel: 2865
+Taxi Fuel: 230
+Alternate Fuel: 1087
+Contingency: 287
+Reserve: 905
+Extra: 0
+Average Flow: 1956
 
 Weather:
-Origin METAR: KJFK 211251Z 25018KT 10SM FEW050 BKN120 BKN250 M03/M15 A3012 RMK AO2 SLP203 T10281150
-Destination METAR: EGLL 211220Z 27015KT 9999 FEW035 SCT120 02/M05 Q1018 NOSIG
-Average Wind: 285°/35 kts
-Temperature Range: -8°C to 2°C (avg: -3°C)
+Origin METAR: LIRF 201520Z 26010KT 9999 FEW030TCU 30/17 Q1015 NOSIG
+Destination METAR: LFBO 201530Z AUTO VRB05KT CAVOK 36/12 Q1018 NOSIG
+Average Wind: Variable/Light kts
+Temperature Range: 17°C to 36°C (avg: 26°C)
 
-Alternate: London Gatwick (EGKK)
-Distance: 24 nm, Bearing: 180°
-Fuel Required: 18500 LBS
+Alternate: MERIGNAC (LFBD)
+Distance: 132 nm, Bearing: 246°
+Fuel Required: 1087 KGS
 
 Navigation Log: Available (structure may vary)
 
