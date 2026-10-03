@@ -608,10 +608,8 @@ func (mc *MockClient) GenerateFlightPlan(request *types.FlightPlanRequest) (*typ
 func TestFlightPlanGeneration(t *testing.T) {
     mockClient := &MockClient{
         FlightPlan: &types.FlightPlanResponse{
-            General: struct {
-                DistanceNM float64 `xml:"distance"`
-            }{
-                DistanceNM: 2475.0,
+            General: types.GeneralInfo{
+                RouteDistance: "2475",
             },
         },
     }
@@ -624,7 +622,7 @@ func TestFlightPlanGeneration(t *testing.T) {
     
     flightPlan, err := mockClient.GenerateFlightPlan(request)
     assert.NoError(t, err)
-    assert.Equal(t, 2475.0, flightPlan.General.DistanceNM)
+    assert.Equal(t, 2475, flightPlan.General.RouteDistance.Int())
 }
 ```
 

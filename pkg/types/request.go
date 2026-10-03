@@ -149,7 +149,7 @@ type FetchRequest struct {
 	UserID   string `form:"userid,omitempty"`    // SimBrief user ID
 	Username string `form:"username,omitempty"`  // SimBrief username
 	StaticID string `form:"static_id,omitempty"` // Static reference ID
-	JSON     bool   `form:"json,omitempty"`      // Request JSON format (default: XML)
+	JSON     bool   `form:"json,omitempty"`      // Request JSON v2 format (json=v2); default is XML
 }
 
 // ToQueryParams converts FetchRequest to URL query parameters
@@ -166,7 +166,7 @@ func (fr *FetchRequest) ToQueryParams() string {
 		values.Add("static_id", fr.StaticID)
 	}
 	if fr.JSON {
-		values.Add("json", "1")
+		values.Add("json", "v2")
 	}
 
 	if len(values) == 0 {

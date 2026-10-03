@@ -88,15 +88,19 @@ func main() {
 
 	// Display flight plan information
 	fmt.Printf("Flight: %s → %s\n", flightPlan.Origin.ICAO, flightPlan.Destination.ICAO)
-	fmt.Printf("Aircraft: %s (%s)\n", flightPlan.Aircraft.ICAO, flightPlan.Aircraft.Name)
+	fmt.Printf("Callsign: %s\n", flightPlan.ATC.Callsign)
+	fmt.Printf("Aircraft: %s (%s)\n", flightPlan.Aircraft.ICAOCode, flightPlan.Aircraft.Name)
 	fmt.Printf("Route: %s\n", flightPlan.General.Route)
-	fmt.Printf("Distance: %s nm\n", flightPlan.General.Distance)
-	fmt.Printf("Planned Fuel: %s %s\n", flightPlan.Fuel.Plan, flightPlan.General.Units)
-	fmt.Printf("Flight Time: %s\n", flightPlan.Times.FlightTime)
+	fmt.Printf("Distance: %d nm\n", flightPlan.General.RouteDistance.Int())
+	fmt.Printf("Planned Fuel: %d %s\n", flightPlan.Fuel.PlanRamp.Int(), flightPlan.Params.Units)
+	fmt.Printf("Flight Time: %s\n", flightPlan.Times.EstTimeEnroute)
 
 	// Show first few navigation fixes
-	if flightPlan.NavLog != nil {
-		fmt.Println("\nNavigation log available (structure may vary)")
+	for i, fix := range flightPlan.NavLog {
+		if i == 5 {
+			break
+		}
+		fmt.Printf("  %-6s %-7s %6d ft\n", fix.Ident, fix.ViaAirway, fix.AltitudeFeet.Int())
 	}
 
 	fmt.Println("\n✅ Example completed successfully!")

@@ -85,6 +85,12 @@ func (c *Client) GetFlightPlanByStaticID(userID, staticID string) (*types.Flight
 	return c.fetchFlightPlan(req)
 }
 
+// GetFlightPlan fetches and decodes a flight plan; req.JSON selects JSON v2
+// (json=v2) or XML. Both decode into the same FlightPlanResponse.
+func (c *Client) GetFlightPlan(req *types.FetchRequest) (*types.FlightPlanResponse, error) {
+	return c.fetchFlightPlan(req)
+}
+
 // GetFlightPlanXML retrieves flight plan data in XML format
 func (c *Client) GetFlightPlanXML(req *types.FetchRequest) ([]byte, error) {
 	// Force XML format
@@ -207,24 +213,20 @@ func (c *Client) fetchFlightPlan(req *types.FetchRequest) (*types.FlightPlanResp
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		// Try to parse error
-		if req.JSON {
-			var apiErr types.APIError
-			if err := json.Unmarshal(body, &apiErr); err == nil {
-				return nil, apiErr
-			}
-		} else {
-			var apiErr types.APIError
-			if err := xml.Unmarshal(body, &apiErr); err == nil {
-				return nil, apiErr
-			}
+		// SimBrief reports fetch errors in the <fetch><status> block.
+		if msg := fetchStatusError(body, req.JSON); msg != "" {
+			return nil, types.APIError{Message: msg, Code: resp.StatusCode}
 		}
 		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
 	}
 
-	var flightPlan types.FlightPlanResponse
+	return decodeFlightPlan(body, req.JSON)
+}
 
-	if req.JSON {
+// decodeFlightPlan decodes a JSON v2 (asJSON) or XML OFP body.
+func decodeFlightPlan(body []byte, asJSON bool) (*types.FlightPlanResponse, error) {
+	var flightPlan types.FlightPlanResponse
+	if asJSON {
 		if err := json.Unmarshal(body, &flightPlan); err != nil {
 			return nil, fmt.Errorf("failed to decode JSON response: %w", err)
 		}
@@ -233,8 +235,27 @@ func (c *Client) fetchFlightPlan(req *types.FetchRequest) (*types.FlightPlanResp
 			return nil, fmt.Errorf("failed to decode XML response: %w", err)
 		}
 	}
-
+	if s := flightPlan.Fetch.Status; s != "" && s != "Success" {
+		return nil, types.APIError{Message: s}
+	}
 	return &flightPlan, nil
+}
+
+// fetchStatusError returns the fetch status message of an error body, or "".
+func fetchStatusError(body []byte, asJSON bool) string {
+	var reply struct {
+		Fetch types.FetchInfo `xml:"fetch" json:"fetch"`
+	}
+	var err error
+	if asJSON {
+		err = json.Unmarshal(body, &reply)
+	} else {
+		err = xml.Unmarshal(body, &reply)
+	}
+	if err != nil {
+		return ""
+	}
+	return reply.Fetch.Status
 }
 
 // GetDirectEditURL generates a URL to edit a specific flight plan on SimBrief website

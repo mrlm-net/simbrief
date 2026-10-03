@@ -77,93 +77,93 @@ func main() {
 	fmt.Printf("Flight Plan Analysis for %s\n", userID)
 	fmt.Printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
 	fmt.Printf("Route: %s → %s\n", flightPlan.Origin.ICAO, flightPlan.Destination.ICAO)
-	fmt.Printf("Origin: %s (%s) - %s, %s\n",
+	fmt.Printf("Origin: %s (%s) runway %s, elevation %d ft\n",
 		flightPlan.Origin.Name, flightPlan.Origin.ICAO,
-		flightPlan.Origin.City, flightPlan.Origin.Country)
-	fmt.Printf("Destination: %s (%s) - %s, %s\n",
+		flightPlan.Origin.Runway, flightPlan.Origin.Elevation.Int())
+	fmt.Printf("Destination: %s (%s) runway %s, elevation %d ft\n",
 		flightPlan.Destination.Name, flightPlan.Destination.ICAO,
-		flightPlan.Destination.City, flightPlan.Destination.Country)
+		flightPlan.Destination.Runway, flightPlan.Destination.Elevation.Int())
+
+	// ATC flight plan
+	fmt.Printf("\nATC:\n")
+	fmt.Printf("Callsign: %s (rules %s, type %s)\n",
+		flightPlan.ATC.Callsign, flightPlan.ATC.FlightRules, flightPlan.ATC.FlightType)
+	fmt.Printf("Initial level: %s%s\n", flightPlan.ATC.InitialAltUnit, flightPlan.ATC.InitialAlt)
+	fmt.Printf("Route: %s\n", flightPlan.ATC.Route)
 
 	// Aircraft details
-	fmt.Printf("\nAircraft: %s (%s)\n", flightPlan.Aircraft.Name, flightPlan.Aircraft.ICAO)
+	fmt.Printf("\nAircraft: %s (%s)\n", flightPlan.Aircraft.Name, flightPlan.Aircraft.ICAOCode)
 	fmt.Printf("Registration: %s\n", flightPlan.Aircraft.Registration)
-	fmt.Printf("Engine: %s\n", flightPlan.Aircraft.Engine)
+	fmt.Printf("Engines: %s\n", flightPlan.Aircraft.Engines)
 
 	// Flight planning details
 	fmt.Printf("\nFlight Planning:\n")
-	fmt.Printf("Distance: %s nm\n", flightPlan.General.Distance)
+	fmt.Printf("Distance: %d nm\n", flightPlan.General.RouteDistance.Int())
 	fmt.Printf("Route: %s\n", flightPlan.General.Route)
-	fmt.Printf("Cruise Altitude: %s\n", flightPlan.General.CruiseAltitude)
-	fmt.Printf("Cost Index: %s\n", flightPlan.General.CostIndex)
+	fmt.Printf("SID: %s  STAR: %s\n", flightPlan.General.SIDIdent, flightPlan.General.STARIdent)
+	fmt.Printf("Cruise Altitude: %d ft\n", flightPlan.General.InitialAltitude.Int())
+	fmt.Printf("Cost Index: %d\n", flightPlan.General.CostIndex.Int())
+	fmt.Printf("Average Wind: %s°/%s kts\n",
+		flightPlan.General.AvgWindDir, flightPlan.General.AvgWindSpd)
 
-	// Timing information
+	// Timing information (JSON v2: ISO 8601 times, HH:MM:SS durations)
 	fmt.Printf("\nTiming:\n")
-	fmt.Printf("Flight Time: %s\n", flightPlan.Times.FlightTime)
-	fmt.Printf("Block Time: %s\n", flightPlan.Times.BlockTime)
-	fmt.Printf("Taxi Out: %s min\n", flightPlan.Times.TaxiOut)
-	fmt.Printf("Taxi In: %s min\n", flightPlan.Times.TaxiIn)
+	fmt.Printf("Flight Time: %s\n", flightPlan.Times.EstTimeEnroute)
+	fmt.Printf("Block Time: %s\n", flightPlan.Times.EstBlock)
+	fmt.Printf("Taxi Out: %s\n", flightPlan.Times.TaxiOut)
+	fmt.Printf("Taxi In: %s\n", flightPlan.Times.TaxiIn)
 
 	// Weight and balance
-	fmt.Printf("\nWeight & Balance (%s):\n", flightPlan.General.Units)
+	units := flightPlan.Params.Units
+	fmt.Printf("\nWeight & Balance (%s):\n", units)
 	fmt.Printf("Operating Empty Weight: %s\n", flightPlan.Weights.OEW)
-	fmt.Printf("Zero Fuel Weight: %s\n", flightPlan.Weights.ZFW)
-	fmt.Printf("Takeoff Weight: %s\n", flightPlan.Weights.TakeoffWt)
-	fmt.Printf("Landing Weight: %s\n", flightPlan.Weights.LandingWt)
+	fmt.Printf("Zero Fuel Weight: %s\n", flightPlan.Weights.EstZFW)
+	fmt.Printf("Takeoff Weight: %s\n", flightPlan.Weights.EstTOW)
+	fmt.Printf("Landing Weight: %s\n", flightPlan.Weights.EstLDW)
 	fmt.Printf("Payload: %s (Pax: %s @ %s)\n",
 		flightPlan.Weights.Payload, flightPlan.Weights.PaxCount, flightPlan.Weights.PaxWeight)
 
 	// Fuel planning
-	fmt.Printf("\nFuel Planning (%s):\n", flightPlan.General.Units)
-	fmt.Printf("Total Planned: %s\n", flightPlan.Fuel.Plan)
-	fmt.Printf("Trip Fuel: %s\n", flightPlan.Fuel.Trip)
+	fmt.Printf("\nFuel Planning (%s):\n", units)
+	fmt.Printf("Block Fuel: %s\n", flightPlan.Fuel.PlanRamp)
+	fmt.Printf("Trip Fuel: %s\n", flightPlan.Fuel.EnrouteBurn)
 	fmt.Printf("Taxi Fuel: %s\n", flightPlan.Fuel.Taxi)
-	fmt.Printf("Alternate Fuel: %s\n", flightPlan.Fuel.Alternate)
+	fmt.Printf("Alternate Fuel: %s\n", flightPlan.Fuel.AlternateBurn)
 	fmt.Printf("Contingency: %s\n", flightPlan.Fuel.Contingency)
 	fmt.Printf("Reserve: %s\n", flightPlan.Fuel.Reserve)
 	fmt.Printf("Extra: %s\n", flightPlan.Fuel.Extra)
 	fmt.Printf("Average Flow: %s\n", flightPlan.Fuel.AvgFuelFlow)
 
 	// Weather information
-	if flightPlan.Weather.OriginMETAR != "" || flightPlan.Weather.DestMETAR != "" {
+	if flightPlan.Weather.OrigMETAR != "" || flightPlan.Weather.DestMETAR != "" {
 		fmt.Printf("\nWeather:\n")
-		if flightPlan.Weather.OriginMETAR != "" {
-			fmt.Printf("Origin METAR: %s\n", flightPlan.Weather.OriginMETAR)
+		if flightPlan.Weather.OrigMETAR != "" {
+			fmt.Printf("Origin METAR: %s\n", flightPlan.Weather.OrigMETAR)
 		}
 		if flightPlan.Weather.DestMETAR != "" {
 			fmt.Printf("Destination METAR: %s\n", flightPlan.Weather.DestMETAR)
 		}
-		fmt.Printf("Average Wind: %s°/%s kts\n",
-			flightPlan.Weather.AvgWindDir, flightPlan.Weather.AvgWindSpd)
-		fmt.Printf("Temperature Range: %s°C to %s°C (avg: %s°C)\n",
-			flightPlan.Weather.MinTemp, flightPlan.Weather.MaxTemp, flightPlan.Weather.AvgTemp)
 	}
 
-	// Alternate information
-	if flightPlan.Alternate.ICAO != "" {
-		fmt.Printf("\nAlternate: %s (%s)\n", flightPlan.Alternate.Name, flightPlan.Alternate.ICAO)
-		fmt.Printf("Distance: %s nm, Bearing: %s°\n",
-			flightPlan.Alternate.Distance, flightPlan.Alternate.Bearing)
-		fmt.Printf("Fuel Required: %s %s\n",
-			flightPlan.Alternate.FuelRequired, flightPlan.General.Units)
+	// Alternates
+	for _, altn := range flightPlan.Alternates {
+		fmt.Printf("\nAlternate: %s (%s) runway %s\n", altn.Name, altn.ICAO, altn.Runway)
+		fmt.Printf("Distance: %s nm, Track: %s°\n", altn.Distance, altn.TrackMag)
+		fmt.Printf("Fuel Required: %s %s\n", altn.Burn, units)
 	}
 
-	// Navigation log summary
-	if flightPlan.NavLog != nil {
-		fmt.Printf("\nNavigation Log: Available (structure may vary)\n")
+	// Navigation log
+	fmt.Printf("\nNavigation Log (%d fixes):\n", len(flightPlan.NavLog))
+	for _, fix := range flightPlan.NavLog {
+		fmt.Printf("  %-6s %-4s %-8s %6d ft  %s\n",
+			fix.Ident, fix.Type, fix.ViaAirway, fix.AltitudeFeet.Int(), fix.Stage)
 	}
 
 	// File links
-	if flightPlan.Files.PDFLink != nil {
+	if flightPlan.Files.PDF.Link != "" {
 		fmt.Printf("\nGenerated Files:\n")
-		if flightPlan.Files.PDFLink != nil {
-			fmt.Printf("PDF: Available\n")
-		}
-		if flightPlan.Files.XMLLink != nil {
-			fmt.Printf("XML: Available\n")
-		}
-		if flightPlan.Files.PLNLink != nil {
-			fmt.Printf("FSX/P3D: Available\n")
-		}
+		fmt.Printf("PDF: %s%s\n", flightPlan.Files.Directory, flightPlan.Files.PDF.Link)
+		fmt.Printf("Other formats: %d\n", len(flightPlan.Files.Files))
 	}
 
 	fmt.Println("\n✅ Advanced analysis completed!")

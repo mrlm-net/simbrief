@@ -65,8 +65,9 @@ if userID != "" {
     } else {
         fmt.Printf("Flight: %s to %s\n", 
             flightPlan.Origin.ICAO, flightPlan.Destination.ICAO)
-        fmt.Printf("Distance: %.0f nm\n", flightPlan.General.DistanceNM)
+        fmt.Printf("Distance: %d nm\n", flightPlan.General.RouteDistance.Int())
         fmt.Printf("Aircraft: %s\n", flightPlan.Aircraft.Name)
+        fmt.Printf("Navlog fixes: %d\n", len(flightPlan.NavLog))
     }
 }
 ```
