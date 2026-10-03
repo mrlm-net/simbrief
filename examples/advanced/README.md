@@ -98,20 +98,24 @@ if err != nil {
 
 // Analyze various aspects of the flight plan
 fmt.Printf("Route: %s → %s\n", flightPlan.Origin.ICAO, flightPlan.Destination.ICAO)
-fmt.Printf("Aircraft: %s (%s)\n", flightPlan.Aircraft.Name, flightPlan.Aircraft.ICAO)
-fmt.Printf("Distance: %s nm\n", flightPlan.General.Distance)
-fmt.Printf("Flight Time: %s\n", flightPlan.Times.FlightTime)
+fmt.Printf("Callsign: %s\n", flightPlan.ATC.Callsign)
+fmt.Printf("Aircraft: %s (%s)\n", flightPlan.Aircraft.Name, flightPlan.Aircraft.ICAOCode)
+fmt.Printf("Distance: %d nm\n", flightPlan.General.RouteDistance.Int())
+fmt.Printf("Flight Time: %s\n", flightPlan.Times.EstTimeEnroute)
+for _, fix := range flightPlan.NavLog {
+    fmt.Printf("  %-6s %-8s %6d ft\n", fix.Ident, fix.ViaAirway, fix.AltitudeFeet.Int())
+}
 ```
 
 ### 4. Weight & Balance Analysis
 
 ```go
 // Display comprehensive weight and balance information
-fmt.Printf("Weight & Balance (%s):\n", flightPlan.General.Units)
+fmt.Printf("Weight & Balance (%s):\n", flightPlan.Params.Units)
 fmt.Printf("Operating Empty Weight: %s\n", flightPlan.Weights.OEW)
-fmt.Printf("Zero Fuel Weight: %s\n", flightPlan.Weights.ZFW)
-fmt.Printf("Takeoff Weight: %s\n", flightPlan.Weights.TakeoffWt)
-fmt.Printf("Landing Weight: %s\n", flightPlan.Weights.LandingWt)
+fmt.Printf("Zero Fuel Weight: %s\n", flightPlan.Weights.EstZFW)
+fmt.Printf("Takeoff Weight: %s\n", flightPlan.Weights.EstTOW)
+fmt.Printf("Landing Weight: %s\n", flightPlan.Weights.EstLDW)
 fmt.Printf("Payload: %s (Pax: %s @ %s)\n",
     flightPlan.Weights.Payload, flightPlan.Weights.PaxCount, flightPlan.Weights.PaxWeight)
 ```
@@ -120,11 +124,11 @@ fmt.Printf("Payload: %s (Pax: %s @ %s)\n",
 
 ```go
 // Detailed fuel planning breakdown
-fmt.Printf("Fuel Planning (%s):\n", flightPlan.General.Units)
-fmt.Printf("Total Planned: %s\n", flightPlan.Fuel.Plan)
-fmt.Printf("Trip Fuel: %s\n", flightPlan.Fuel.Trip)
+fmt.Printf("Fuel Planning (%s):\n", flightPlan.Params.Units)
+fmt.Printf("Block Fuel: %s\n", flightPlan.Fuel.PlanRamp)
+fmt.Printf("Trip Fuel: %s\n", flightPlan.Fuel.EnrouteBurn)
 fmt.Printf("Taxi Fuel: %s\n", flightPlan.Fuel.Taxi)
-fmt.Printf("Alternate Fuel: %s\n", flightPlan.Fuel.Alternate)
+fmt.Printf("Alternate Fuel: %s\n", flightPlan.Fuel.AlternateBurn)
 fmt.Printf("Contingency: %s\n", flightPlan.Fuel.Contingency)
 fmt.Printf("Reserve: %s\n", flightPlan.Fuel.Reserve)
 fmt.Printf("Extra: %s\n", flightPlan.Fuel.Extra)
@@ -134,14 +138,14 @@ fmt.Printf("Extra: %s\n", flightPlan.Fuel.Extra)
 
 ```go
 // Weather analysis and display
-if flightPlan.Weather.OriginMETAR != "" {
-    fmt.Printf("Origin METAR: %s\n", flightPlan.Weather.OriginMETAR)
+if flightPlan.Weather.OrigMETAR != "" {
+    fmt.Printf("Origin METAR: %s\n", flightPlan.Weather.OrigMETAR)
 }
 if flightPlan.Weather.DestMETAR != "" {
     fmt.Printf("Destination METAR: %s\n", flightPlan.Weather.DestMETAR)
 }
 fmt.Printf("Average Wind: %s°/%s kts\n",
-    flightPlan.Weather.AvgWindDir, flightPlan.Weather.AvgWindSpd)
+    flightPlan.General.AvgWindDir, flightPlan.General.AvgWindSpd)
 ```
 
 ## Sample Output
@@ -258,11 +262,11 @@ This advanced example is perfect for:
 ```go
 // Extract key performance metrics
 metrics := map[string]interface{}{
-    "flight_time":    flightPlan.Times.FlightTime,
-    "fuel_required":  flightPlan.Fuel.Plan,
-    "distance":       flightPlan.General.Distance,
-    "avg_fuel_flow":  flightPlan.Fuel.AvgFuelFlow,
-    "takeoff_weight": flightPlan.Weights.TakeoffWt,
+    "flight_time":    flightPlan.Times.EstTimeEnroute,
+    "fuel_required":  flightPlan.Fuel.PlanRamp.Int(),
+    "distance":       flightPlan.General.RouteDistance.Int(),
+    "avg_fuel_flow":  flightPlan.Fuel.AvgFuelFlow.Int(),
+    "takeoff_weight": flightPlan.Weights.EstTOW.Int(),
 }
 
 // Send to analytics system

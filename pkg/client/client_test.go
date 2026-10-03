@@ -277,7 +277,7 @@ func TestFetchRequestToQueryParams(t *testing.T) {
 				Username: "testuser",
 				JSON:     true,
 			},
-			contains: []string{"username=testuser", "json=1"},
+			contains: []string{"username=testuser", "json=v2"},
 		},
 		{
 			name: "all parameters",
@@ -286,7 +286,7 @@ func TestFetchRequestToQueryParams(t *testing.T) {
 				StaticID: "TEST_FLIGHT",
 				JSON:     true,
 			},
-			contains: []string{"userid=123456", "static_id=TEST_FLIGHT", "json=1"},
+			contains: []string{"userid=123456", "static_id=TEST_FLIGHT", "json=v2"},
 		},
 		{
 			name:    "empty request",

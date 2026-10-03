@@ -226,33 +226,38 @@ aircraftData := &types.AircraftData{
 
 ### Flight Plan Response
 
+`types.FlightPlanResponse` (pkg/types/response.go) decodes the OFP from
+`xml.fetcher.php` both as JSON v2 (`json=v2`) and as XML (root `<OFP>`).
+
 ```go
 type FlightPlanResponse struct {
-    General struct {
-        DistanceNM    float64 `xml:"distance"`
-        FlightTime    string  `xml:"flight_time"`
-        Route         string  `xml:"route"`
-    } `xml:"general"`
-    
-    Origin struct {
-        ICAO string `xml:"icao_code"`
-        Name string `xml:"name"`
-    } `xml:"origin"`
-    
-    Destination struct {
-        ICAO string `xml:"icao_code"`
-        Name string `xml:"name"`
-    } `xml:"destination"`
-    
-    Fuel struct {
-        Total     int `xml:"total"`
-        Taxi      int `xml:"taxi"`
-        Trip      int `xml:"trip"`
-        Reserve   int `xml:"reserve"`
-        Alternate int `xml:"alternate"`
-    } `xml:"fuel"`
+    Fetch            FetchInfo       // fetch status ("Success" or an error)
+    Params           FlightParams    // request id, AIRAC, units ("kgs"/"lbs")
+    General          GeneralInfo     // route, route_ifps, SID/STAR, initial_altitude, costindex, passengers
+    Origin           AirportInfo     // icao_code, plan_rwy, elevation, trans_alt, trans_level, metar
+    Destination      AirportInfo
+    Alternates       []AlternateInfo // AirportInfo + diversion leg (distance, burn, route)
+    NavLog           NavLog          // []NavLogFix
+    AlternateNavLogs []NavLog
+    ATC              ATCInfo         // callsign, flight_rules, flight_type, initial_alt(+unit), route, FPL text
+    Aircraft         AircraftInfo    // icaocode, icao_code, reg, name, engines
+    Fuel             FuelInfo
+    Times            TimeInfo
+    Weights          WeightInfo
+    Weather          WeatherInfo
+    Files            FilesInfo
+    Links            LinksInfo
 }
 ```
+
+Conventions:
+
+- Text values (idents, routes, runways like `"06"`) are `string`.
+- Numbers are `types.Number`, the raw SimBrief text (`"0365"`, `"05000"`)
+  with `Int()`, `Float()`, `Bool()` and `IsSet()`. It decodes JSON strings,
+  JSON numbers and XML text.
+- Times stay `string`: JSON v2 sends ISO 8601 and HH:MM:SS, XML sends Unix
+  seconds and seconds.
 
 ## Error Handling
 

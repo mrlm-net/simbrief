@@ -117,6 +117,34 @@ flightPlan, err := client.GetFlightPlanByUserID("user_id")
 
 // Get flight plan by username  
 flightPlan, err := client.GetFlightPlanByUsername("username")
+
+// Or choose the format: JSON v2 (json=v2) or XML; both decode the same way
+flightPlan, err := client.GetFlightPlan(&types.FetchRequest{UserID: "user_id", JSON: true})
+```
+
+#### OFP Data
+
+`types.FlightPlanResponse` decodes the OFP from JSON v2 and from XML
+(root element `<OFP>`). Numeric values are `types.Number`: the raw text
+SimBrief sends ("0365", "05000", ".57") with `Int()`, `Float()` and
+`Bool()` helpers. Time values stay strings (JSON v2: ISO 8601 and HH:MM:SS,
+XML: Unix seconds and seconds).
+
+```go
+fmt.Println(flightPlan.ATC.Callsign)                          // "CEF007"
+fmt.Println(flightPlan.ATC.InitialAltUnit, flightPlan.ATC.InitialAlt) // "F" "150"
+fmt.Println(flightPlan.General.STARIdent)                     // "BEKV1Q"
+fmt.Println(flightPlan.General.InitialAltitude.Int())         // 15000
+fmt.Println(flightPlan.Origin.ICAO, flightPlan.Origin.Runway) // "LKPR" "06"
+fmt.Println(flightPlan.Origin.TransAlt.Int())                 // 5000
+fmt.Println(flightPlan.Aircraft.ICAOCode)                     // "A319"
+
+for _, altn := range flightPlan.Alternates {
+    fmt.Println(altn.ICAO, altn.Runway, altn.Burn.Int())
+}
+for _, fix := range flightPlan.NavLog {
+    fmt.Println(fix.Ident, fix.ViaAirway, fix.AltitudeFeet.Int(), fix.IsSIDSTAR.Bool())
+}
 ```
 
 #### Custom Configuration
