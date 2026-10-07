@@ -200,3 +200,121 @@ func TestNavLogXMLRoundTrip(t *testing.T) {
 	require.Len(t, out.NavLog, 2)
 	assert.Equal(t, "B", out.NavLog[1].Ident)
 }
+
+func TestGoldenOFPTLR(t *testing.T) {
+	for name, load := range map[string]func(*testing.T) *FlightPlanResponse{
+		"json-v2": loadJSON,
+		"xml":     loadXML,
+	} {
+		t.Run(name, func(t *testing.T) {
+			tlr := load(t).TLR
+
+			c := tlr.Takeoff.Conditions
+			assert.Equal(t, "LKPR", c.AirportICAO)
+			assert.Equal(t, "06", c.PlannedRunway)
+			assert.Equal(t, 59179, c.PlannedWeight.Int())
+			assert.Equal(t, 355, c.WindDirection.Int())
+			assert.Equal(t, 1, c.WindSpeed.Int())
+			assert.Equal(t, 12, c.Temperature.Int())
+			assert.InDelta(t, 30.38, c.Altimeter.Float(), 1e-9)
+			assert.Equal(t, "dry", c.SurfaceCondition)
+
+			require.Len(t, tlr.Takeoff.Runways, 4)
+			for _, ident := range []string{"06", "6", "rwy06"} {
+				r, ok := tlr.TakeoffRunway(ident)
+				require.True(t, ok, ident)
+				assert.Equal(t, "06", r.Identifier)
+				assert.Equal(t, 129, r.SpeedsV1.Int())
+				assert.Equal(t, 129, r.SpeedsVR.Int())
+				assert.Equal(t, 134, r.SpeedsV2.Int())
+			}
+			r, _ := tlr.TakeoffRunway("06")
+			assert.Equal(t, 12188, r.Length.Int())
+			assert.Equal(t, "1", r.FlapSetting)
+			assert.Equal(t, "FLEX", r.ThrustSetting)
+			assert.Equal(t, "ON", r.BleedSetting)
+			assert.Equal(t, "OFF", r.AntiIceSetting)
+			assert.Equal(t, 65, r.FlexTemperature.Int())
+			assert.Equal(t, 75500, r.MaxWeight.Int())
+			assert.Equal(t, "A", r.LimitCode)
+			assert.Equal(t, "2", r.SpeedsV2ID)
+			assert.Equal(t, 203, r.SpeedsOther.Int())
+			assert.Equal(t, "GREEN DOT", r.SpeedsOtherID)
+			assert.Equal(t, 0, r.HeadwindComponent.Int())
+			assert.Equal(t, 1, r.CrosswindComponent.Int())
+			assert.Equal(t, 5943, r.DistanceDecide.Int())
+			assert.Equal(t, 7555, r.DistanceReject.Int())
+			assert.Equal(t, 4633, r.DistanceMargin.Int())
+			assert.Equal(t, 7518, r.DistanceContinue.Int())
+			assert.InDelta(t, 111.15, r.ILSFrequency.Float(), 1e-9)
+
+			r12, ok := tlr.TakeoffRunway("12")
+			require.True(t, ok)
+			assert.Equal(t, -1, r12.HeadwindComponent.Int())
+			_, ok = tlr.TakeoffRunway("07")
+			assert.False(t, ok)
+			_, ok = tlr.TakeoffRunway("06L")
+			assert.False(t, ok)
+
+			l := tlr.Landing
+			assert.Equal(t, "LKPD", l.Conditions.AirportICAO)
+			assert.Equal(t, "09", l.Conditions.PlannedRunway)
+			assert.Equal(t, "FULL", l.Conditions.FlapSetting)
+			assert.Equal(t, 59000, l.DistanceDry.Weight.Int())
+			assert.Equal(t, "MAX MAN", l.DistanceDry.BrakeSetting)
+			assert.Equal(t, "YES", l.DistanceDry.ReverserCredit)
+			assert.Equal(t, 2607, l.DistanceDry.ActualDistance.Int())
+			assert.Equal(t, 3546, l.DistanceDry.FactoredDistance.Int())
+			assert.Equal(t, 4483, l.DistanceWet.FactoredDistance.Int())
+			vref, ok := tlr.LandingVref(false)
+			require.True(t, ok)
+			assert.Equal(t, 125.0, vref)
+			vref, ok = tlr.LandingVref(true)
+			require.True(t, ok)
+			assert.Equal(t, 125.0, vref)
+
+			require.Len(t, l.Runways, 2)
+			assert.Equal(t, "09", l.Runways[0].Identifier)
+			assert.Equal(t, 8202, l.Runways[0].LengthLDA.Int())
+			assert.Equal(t, 62500, l.Runways[0].MaxWeightDry.Int())
+			assert.Equal(t, 62500, l.Runways[0].MaxWeightWet.Int())
+			assert.Equal(t, 2, l.Runways[0].HeadwindComponent.Int())
+			assert.False(t, l.Runways[0].ILSFrequency.IsSet())
+		})
+	}
+}
+
+func TestTLRMissing(t *testing.T) {
+	var j FlightPlanResponse
+	require.NoError(t, json.Unmarshal([]byte(`{"fetch":{"status":"Success"}}`), &j))
+	var x FlightPlanResponse
+	require.NoError(t, xml.Unmarshal([]byte(`<OFP><fetch><status>Success</status></fetch></OFP>`), &x))
+	for _, ofp := range []FlightPlanResponse{j, x} {
+		assert.Equal(t, TLR{}, ofp.TLR)
+		_, ok := ofp.TLR.TakeoffRunway("06")
+		assert.False(t, ok)
+		_, ok = ofp.TLR.LandingVref(false)
+		assert.False(t, ok)
+	}
+}
+
+func TestTLRTakeoffRunwayMatching(t *testing.T) {
+	tlr := TLR{Takeoff: TLRTakeoff{Runways: []TakeoffRunway{
+		{TLRRunway: TLRRunway{Identifier: "06L"}},
+		{TLRRunway: TLRRunway{Identifier: "06R"}},
+		{TLRRunway: TLRRunway{Identifier: "24"}},
+		{TLRRunway: TLRRunway{Identifier: "9L"}},
+	}}}
+	for ident, want := range map[string]string{
+		"06L": "06L", "6l": "06L", "6R": "06R", "24": "24", "024": "24",
+		"09L": "9L", "9": "9L",
+	} {
+		r, ok := tlr.TakeoffRunway(ident)
+		require.True(t, ok, ident)
+		assert.Equal(t, want, r.Identifier, ident)
+	}
+	for _, ident := range []string{"06", "6", "24L", "", "36"} {
+		_, ok := tlr.TakeoffRunway(ident)
+		assert.False(t, ok, ident)
+	}
+}
