@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"strings"
 )
 
 // FlightPlanResponse is a SimBrief OFP as returned by
@@ -37,8 +38,10 @@ type FlightPlanResponse struct {
 	Times            TimeInfo     `xml:"times" json:"times"`
 	Weights          WeightInfo   `xml:"weights" json:"weights"`
 	Weather          WeatherInfo  `xml:"weather" json:"weather"`
-	Files            FilesInfo    `xml:"files" json:"files"`
-	Links            LinksInfo    `xml:"links" json:"links"`
+	// TLR is the runway analysis; zero when the plan has none.
+	TLR   TLR       `xml:"tlr" json:"tlr"`
+	Files FilesInfo `xml:"files" json:"files"`
+	Links LinksInfo `xml:"links" json:"links"`
 }
 
 // Alternate returns the first alternate, or nil when the plan has none.
@@ -457,4 +460,169 @@ type LayoutOption struct {
 	NameLong      string  `json:"name_long"`
 	PopularityPct float64 `json:"popularity_pct"`
 	LastUpdated   string  `json:"last_updated"`
+}
+
+// TLR is the <tlr> block: SimBrief's runway analysis (take-off and landing
+// report). It is present only when the plan was generated with runway
+// analysis on (FlightPlanRequest.RunwayAnalysis) for an aircraft that
+// supports it (AircraftOption.TLRData); otherwise it is the zero value.
+// Weights are in Params.Units, lengths and distances in feet, speeds in
+// knots, temperatures in degrees Celsius, the altimeter in inches of mercury.
+type TLR struct {
+	Takeoff TLRTakeoff `xml:"takeoff" json:"takeoff"`
+	Landing TLRLanding `xml:"landing" json:"landing"`
+}
+
+// TLRTakeoff is the take-off part of the runway analysis: the conditions
+// and one entry per analysed runway of the origin.
+type TLRTakeoff struct {
+	Conditions TLRConditions   `xml:"conditions" json:"conditions"`
+	Runways    []TakeoffRunway `xml:"runway" json:"runway"`
+}
+
+// TLRLanding is the landing part of the runway analysis for the
+// destination: the conditions, the landing distances for a dry and a wet
+// runway, and one entry per analysed runway.
+type TLRLanding struct {
+	Conditions  TLRConditions      `xml:"conditions" json:"conditions"`
+	DistanceDry TLRLandingDistance `xml:"distance_dry" json:"distance_dry"`
+	DistanceWet TLRLandingDistance `xml:"distance_wet" json:"distance_wet"`
+	Runways     []LandingRunway    `xml:"runway" json:"runway"`
+}
+
+// TLRConditions are the conditions the runway analysis was computed for.
+type TLRConditions struct {
+	AirportICAO   string `xml:"airport_icao" json:"airport_icao"`
+	PlannedRunway string `xml:"planned_runway" json:"planned_runway"` // "06"
+	PlannedWeight Number `xml:"planned_weight" json:"planned_weight"`
+	// FlapSetting is sent for landing only ("FULL").
+	FlapSetting      string `xml:"flap_setting" json:"flap_setting"`
+	WindDirection    Number `xml:"wind_direction" json:"wind_direction"`
+	WindSpeed        Number `xml:"wind_speed" json:"wind_speed"`
+	Temperature      Number `xml:"temperature" json:"temperature"`
+	Altimeter        Number `xml:"altimeter" json:"altimeter"`                 // "30.38"
+	SurfaceCondition string `xml:"surface_condition" json:"surface_condition"` // "dry"
+}
+
+// TLRRunway is the runway data shared by take-off and landing entries.
+type TLRRunway struct {
+	Identifier string `xml:"identifier" json:"identifier"` // "06"
+	Length     Number `xml:"length" json:"length"`
+	LengthTORA Number `xml:"length_tora" json:"length_tora"`
+	LengthTODA Number `xml:"length_toda" json:"length_toda"`
+	LengthASDA Number `xml:"length_asda" json:"length_asda"`
+	LengthLDA  Number `xml:"length_lda" json:"length_lda"`
+	Elevation  Number `xml:"elevation" json:"elevation"`
+	Gradient   Number `xml:"gradient" json:"gradient"` // percent, "-0.36"
+	TrueCourse Number `xml:"true_course" json:"true_course"`
+	MagCourse  Number `xml:"magnetic_course" json:"magnetic_course"`
+	// HeadwindComponent is negative for a tailwind ("-1").
+	HeadwindComponent  Number `xml:"headwind_component" json:"headwind_component"`
+	CrosswindComponent Number `xml:"crosswind_component" json:"crosswind_component"`
+	ILSFrequency       Number `xml:"ils_frequency" json:"ils_frequency"` // empty without ILS
+}
+
+// TakeoffRunway is the take-off analysis for one runway.
+type TakeoffRunway struct {
+	TLRRunway
+	FlapSetting    string `xml:"flap_setting" json:"flap_setting"`         // "1"
+	ThrustSetting  string `xml:"thrust_setting" json:"thrust_setting"`     // "FLEX"
+	BleedSetting   string `xml:"bleed_setting" json:"bleed_setting"`       // "ON"
+	AntiIceSetting string `xml:"anti_ice_setting" json:"anti_ice_setting"` // "OFF"
+	// FlexTemperature is the assumed (flex) temperature.
+	FlexTemperature Number `xml:"flex_temperature" json:"flex_temperature"`
+	MaxTemperature  Number `xml:"max_temperature" json:"max_temperature"`
+	MaxWeight       Number `xml:"max_weight" json:"max_weight"`
+	LimitCode       string `xml:"limit_code" json:"limit_code"`
+	SpeedsV1        Number `xml:"speeds_v1" json:"speeds_v1"`
+	SpeedsVR        Number `xml:"speeds_vr" json:"speeds_vr"`
+	SpeedsV2        Number `xml:"speeds_v2" json:"speeds_v2"`
+	SpeedsV2ID      string `xml:"speeds_v2_id" json:"speeds_v2_id"`
+	// SpeedsOther is an extra speed named by SpeedsOtherID ("GREEN DOT").
+	SpeedsOther      Number `xml:"speeds_other" json:"speeds_other"`
+	SpeedsOtherID    string `xml:"speeds_other_id" json:"speeds_other_id"`
+	DistanceDecide   Number `xml:"distance_decide" json:"distance_decide"`
+	DistanceReject   Number `xml:"distance_reject" json:"distance_reject"`
+	DistanceMargin   Number `xml:"distance_margin" json:"distance_margin"`
+	DistanceContinue Number `xml:"distance_continue" json:"distance_continue"`
+}
+
+// TLRLandingDistance is the landing distance for one surface condition.
+type TLRLandingDistance struct {
+	Weight           Number `xml:"weight" json:"weight"`
+	FlapSetting      string `xml:"flap_setting" json:"flap_setting"`       // "FULL"
+	BrakeSetting     string `xml:"brake_setting" json:"brake_setting"`     // "MAX MAN"
+	ReverserCredit   string `xml:"reverser_credit" json:"reverser_credit"` // "YES"
+	SpeedsVref       Number `xml:"speeds_vref" json:"speeds_vref"`
+	ActualDistance   Number `xml:"actual_distance" json:"actual_distance"`
+	FactoredDistance Number `xml:"factored_distance" json:"factored_distance"`
+}
+
+// LandingRunway is the landing analysis for one runway.
+type LandingRunway struct {
+	TLRRunway
+	MaxWeightDry Number `xml:"max_weight_dry" json:"max_weight_dry"`
+	MaxWeightWet Number `xml:"max_weight_wet" json:"max_weight_wet"`
+}
+
+// TakeoffRunway returns the take-off analysis for the runway ident. An
+// exact identifier match wins; otherwise leading zeros and case are ignored
+// ("6" finds "06", "6l" finds "06L"). A bare number without a side letter
+// also finds a lettered runway ("06" finds "06L") when exactly one matches.
+func (t TLR) TakeoffRunway(ident string) (TakeoffRunway, bool) {
+	runways := t.Takeoff.Runways
+	for _, r := range runways {
+		if r.Identifier == ident {
+			return r, true
+		}
+	}
+	want := normalizeRunway(ident)
+	if want == "" {
+		return TakeoffRunway{}, false
+	}
+	for _, r := range runways {
+		if normalizeRunway(r.Identifier) == want {
+			return r, true
+		}
+	}
+	if !hasRunwaySide(want) {
+		match, n := -1, 0
+		for i, r := range runways {
+			if strings.TrimRight(normalizeRunway(r.Identifier), "LCRT") == want {
+				match, n = i, n+1
+			}
+		}
+		if n == 1 {
+			return runways[match], true
+		}
+	}
+	return TakeoffRunway{}, false
+}
+
+// LandingVref returns the landing reference speed for a wet or dry runway,
+// and false when the plan has no landing analysis.
+func (t TLR) LandingVref(wet bool) (float64, bool) {
+	d := t.Landing.DistanceDry
+	if wet {
+		d = t.Landing.DistanceWet
+	}
+	if !d.SpeedsVref.IsSet() || d.SpeedsVref.Float() <= 0 {
+		return 0, false
+	}
+	return d.SpeedsVref.Float(), true
+}
+
+// normalizeRunway upper-cases a runway identifier and drops "RW"/"RWY" and
+// leading zeros: "rwy 06l" becomes "6L".
+func normalizeRunway(ident string) string {
+	s := strings.ToUpper(strings.TrimSpace(ident))
+	s = strings.TrimPrefix(s, "RWY")
+	s = strings.TrimPrefix(s, "RW")
+	s = strings.TrimSpace(s)
+	s = strings.TrimLeft(s, "0")
+	return s
+}
+
+func hasRunwaySide(norm string) bool {
+	return norm != "" && strings.ContainsAny(norm[len(norm)-1:], "LCRT")
 }

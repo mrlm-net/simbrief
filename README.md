@@ -147,6 +147,29 @@ for _, fix := range flightPlan.NavLog {
 }
 ```
 
+#### Take-off and Landing Speeds (Runway Analysis)
+
+When the plan is generated with runway analysis (`RunwayAnalysis` in the
+request, for an aircraft whose `TLRData` is true), `flightPlan.TLR` holds
+the take-off and landing report from both JSON v2 and XML. Without it, `TLR`
+is the zero value and the helpers return `false`.
+
+```go
+tlr := flightPlan.TLR
+if rwy, ok := tlr.TakeoffRunway(flightPlan.Origin.Runway); ok { // "06"; "6" works too
+    fmt.Println(rwy.SpeedsV1.Int(), rwy.SpeedsVR.Int(), rwy.SpeedsV2.Int()) // 129 129 134
+    fmt.Println(rwy.FlapSetting, rwy.ThrustSetting, rwy.FlexTemperature.Int()) // "1" "FLEX" 65
+}
+if vref, ok := tlr.LandingVref(false); ok { // false = dry runway, true = wet
+    fmt.Println(vref) // 125
+}
+fmt.Println(tlr.Landing.DistanceDry.FactoredDistance.Int()) // 3546 (feet)
+```
+
+`TakeoffRunway` tries the exact identifier first, then ignores case and
+leading zeros; a number without a side letter finds a lettered runway only
+when exactly one matches.
+
 #### Custom Configuration
 
 ```go
