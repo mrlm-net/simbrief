@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `CHANGELOG.md` and `CLAUDE.md`.
+- Documentation website (`website/`, simbrief.mrlm.net): `docs/usage.md` is
+  split into one page per topic (getting started, fetching, the OFP, runway
+  analysis, generating plans, helpers, errors, examples).
 
 ## [0.2.0] - 2026-10-07
 

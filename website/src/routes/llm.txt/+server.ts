@@ -1,0 +1,44 @@
+import type { RequestHandler } from './$types.js';
+import { loadDocIndex } from '$lib/content/pipeline.server.js';
+import { siteConfig } from '$lib/config/site.js';
+
+export const prerender = true;
+
+export const GET: RequestHandler = () => {
+    const baseUrl = `${siteConfig.url}${siteConfig.basePath}`;
+    const docs = loadDocIndex();
+    docs.sort((a, b) => a.order - b.order);
+
+    const docList = docs
+        .map((doc) => `- [${doc.title}](${baseUrl}/docs/${doc.slug}): ${doc.description}`)
+        .join('\n');
+
+    const content = `# ${siteConfig.title}
+
+> ${siteConfig.description}
+
+## Key URLs
+
+- Website: ${baseUrl}/
+- Documentation: ${baseUrl}/docs/getting-started
+- Changelog: ${baseUrl}/docs/changelog
+- Repository: ${siteConfig.repoUrl}
+
+## Install
+
+go get github.com/mrlm-net/simbrief
+
+## Packages
+
+- pkg/client: Client (fetching, supported options, dispatch URLs), FlightPlanBuilder, RouteHelper, FuelHelper, TimeHelper
+- pkg/types: FlightPlanRequest, FetchRequest, FlightPlanResponse (OFP, NavLog, TLR), Number, APIError, sentinel errors, enums
+
+## Documentation
+
+${docList}
+`;
+
+    return new Response(content, {
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+    });
+};

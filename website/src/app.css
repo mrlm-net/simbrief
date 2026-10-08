@@ -1,0 +1,11 @@
+@import "tailwindcss";
+@import "./theme.css";
+@plugin "@tailwindcss/typography";
+
+/* simbrief: sage */
+:root {
+	--brand: #3d7a4f;
+	--brand-soft: #e4efe7;
+	--brand-dark: #7fb38f;
+	--brand-soft-dark: #18241c;
+}

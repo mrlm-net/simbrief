@@ -10,7 +10,7 @@ the public `/api/xml.fetcher.php`.
 - `pkg/types/` - `FlightPlanRequest`/`FetchRequest`, `FlightPlanResponse` (OFP, NavLog, TLR), `Number`, `APIError`, sentinel errors, enums
 - `pkg/types/testdata/` - real OFP (CEF007 LKPR-LKPD) as JSON v2 and XML; golden tests decode both
 - `examples/basic`, `examples/advanced` - runnable programs (`SIMBRIEF_USER_ID`)
-- `docs/usage.md` - the API guide; `CHANGELOG.md`
+- `docs/*.md` - the API guide, one page per topic, also the website (`website/`, SvelteKit; `npm run build` there); `CHANGELOG.md`
 
 ## Consumers
 
@@ -28,7 +28,7 @@ go build ./... && go vet ./... && go test ./...
 ## Conventions
 
 - Stdlib only. Never add dependencies (testify is already there for tests only).
-- Docs describe the real API only. Every snippet in `docs/usage.md` must
+- Docs describe the real API only. Every snippet in `docs/*.md` must
   compile: check it in a throwaway module with a `replace` to this repo.
 - OFP numbers are `types.Number`, times stay strings (formats differ by JSON/XML).
 - Both formats must decode into the same struct; add golden test values for new fields.

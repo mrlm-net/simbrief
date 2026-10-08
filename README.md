@@ -1,5 +1,9 @@
 # mrlm-net/simbrief
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/mrlm-net/simbrief.svg)](https://pkg.go.dev/github.com/mrlm-net/simbrief)
+[![Docs](https://img.shields.io/badge/docs-simbrief.mrlm.net-3d7a4f)](https://simbrief.mrlm.net/)
+[![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-6c7480)](LICENSE)
+
 GoLang wrapper for the SimBrief API, allowing Gophers to create flight planning tools, calculate flight plans, and integrate with SimBrief's comprehensive flight planning services.
 
 |  |  |
@@ -196,7 +200,7 @@ export SIMBRIEF_USER_ID=your_id
 
 ## Documentation
 
-• [Usage guide](docs/usage.md) - the whole API: client, fetching, the OFP and runway analysis, generating plans, helpers, errors
+• [Documentation](https://simbrief.mrlm.net/) - the whole API: client, fetching, the OFP and runway analysis, generating plans, helpers, errors (sources in [docs/](docs/getting-started.md))
 • [Changelog](CHANGELOG.md)
 
 ## Contributing
