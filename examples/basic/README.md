@@ -1,143 +1,94 @@
-# Basic SimBrief Example
+# Basic example
 
-This example demonstrates basic usage of the SimBrief SDK for common operations like getting supported aircraft types and fetching existing flight plans.
+Fetches the supported aircraft and layouts, builds a flight plan request with
+the builder, and fetches the latest OFP of a user.
 
-## Features Demonstrated
-
-- **Get Supported Options**: Retrieve all available aircraft types and layouts
-- **Fetch Flight Plans**: Get existing flight plans by user ID
-- **Basic Error Handling**: Handle common API errors
-- **Response Parsing**: Extract useful information from API responses
-
-## Prerequisites
-
-- Go 1.21 or higher
-- Internet connection for SimBrief API access
-- Optional: SimBrief user ID for fetching existing flight plans
-
-## Environment Variables
+## Running
 
 ```bash
-# Optional: Set user ID to fetch existing flight plans
-export SIMBRIEF_USER_ID=857341
-
-# Optional: Enable debug logging
-export SIMBRIEF_DEBUG=true
-```
-
-## Running the Example
-
-```bash
+export SIMBRIEF_USER_ID=123456   # optional; without it the program stops before step 3
 cd examples/basic
-go run main.go
+go run .
 ```
 
-## Code Overview
+## What it does
 
-### 1. Getting Supported Aircraft Types
+### 1. Supported options
 
 ```go
-// Initialize client (no API key needed for public data)
 simbrief := client.NewClient()
 
-// Get all supported aircraft and layouts
 options, err := simbrief.GetSupportedOptions()
 if err != nil {
-    log.Fatalf("Failed to get supported options: %v", err)
+	log.Fatalf("Failed to get supported options: %v", err)
 }
-
-// Display aircraft information
-for id, aircraft := range options.Aircraft {
-    fmt.Printf("ICAO: %s, Name: %s, Engine: %s\n", 
-        id, aircraft.Name, aircraft.Engine)
-}
+fmt.Printf("Found %d aircraft types and %d layouts\n", len(options.Aircraft), len(options.Layouts))
 ```
 
-### 2. Fetching Existing Flight Plans
+It then prints five aircraft (`id`, `Name`, `Accuracy`) and three layouts
+(`id`, `NameLong`). Map order is random, so the entries differ per run.
+
+### 2. Plan request and URL
 
 ```go
-userID := os.Getenv("SIMBRIEF_USER_ID")
-if userID != "" {
-    // Fetch flight plan by user ID
-    flightPlan, err := simbrief.GetFlightPlanByUserID(userID)
-    if err != nil {
-        log.Printf("Error fetching flight plan: %v", err)
-    } else {
-        fmt.Printf("Flight: %s to %s\n", 
-            flightPlan.Origin.ICAO, flightPlan.Destination.ICAO)
-        fmt.Printf("Distance: %d nm\n", flightPlan.General.RouteDistance.Int())
-        fmt.Printf("Aircraft: %s\n", flightPlan.Aircraft.Name)
-        fmt.Printf("Navlog fixes: %d\n", len(flightPlan.NavLog))
-    }
+request := client.NewFlightPlan("KJFK", "KLAX", "B738").
+	Route("HUSKY6 PENNS CRP LAS1").
+	Altitude("FL380").
+	Registration("N123AB").
+	Captain("JOHN DOE").
+	Passengers(148).
+	StaticID("EXAMPLE_FLIGHT_123").
+	EnableNavLog().
+	Units(types.UnitsLBS).
+	Build()
+
+if err := simbrief.ValidateFlightPlanRequest(request); err != nil {
+	log.Fatalf("Flight plan validation failed: %v", err)
 }
+fmt.Printf("Flight plan generation URL: %s\n", simbrief.GenerateFlightPlanURL(request))
 ```
 
-### 3. Error Handling
+The URL opens SimBrief's dispatch page with the fields filled in; generating
+the plan needs a browser logged in to SimBrief.
+
+### 3. Latest OFP
 
 ```go
-options, err := simbrief.GetSupportedOptions()
+flightPlan, err := simbrief.GetFlightPlanByUserID(userID)
 if err != nil {
-    // Handle different types of errors
-    switch {
-    case strings.Contains(err.Error(), "network"):
-        fmt.Println("Network error - check internet connection")
-    case strings.Contains(err.Error(), "timeout"):
-        fmt.Println("Request timeout - try again later")
-    default:
-        fmt.Printf("API error: %v\n", err)
-    }
-    return
+	log.Printf("Failed to fetch flight plan: %v", err)
+	return
 }
+fmt.Printf("Flight: %s → %s\n", flightPlan.Origin.ICAO, flightPlan.Destination.ICAO)
+fmt.Printf("Distance: %d nm\n", flightPlan.General.RouteDistance.Int())
+fmt.Printf("Planned Fuel: %d %s\n", flightPlan.Fuel.PlanRamp.Int(), flightPlan.Params.Units)
 ```
 
-## Sample Output
+It also prints the callsign, aircraft, route, enroute time and the first five
+navlog fixes (ident, airway, altitude).
+
+## Sample output
+
+The fetch part, rendered from the test OFP in `pkg/types/testdata` (a
+CEF007 LKPR-LKPD plan):
 
 ```
-=== Getting Supported Options ===
-Found 847 aircraft types and 12 layouts
-
-Sample Aircraft Types:
-ICAO: A20N, Name: Airbus A320neo, Engine: CFM LEAP / PW GTF
-ICAO: A21N, Name: Airbus A321neo, Engine: CFM LEAP / PW GTF
-ICAO: A319, Name: Airbus A319, Engine: CFM56 / V2500
-ICAO: A320, Name: Airbus A320, Engine: CFM56 / V2500
-ICAO: A321, Name: Airbus A321, Engine: CFM56 / V2500
-
-Sample Layouts:
-ID: default, Name: SimBrief Default
-ID: lido, Name: Lido mPilot
-ID: jeppesen, Name: Jeppesen
-ID: pfpx, Name: PFPX
-ID: aivlasoft, Name: AivlaSoft EFB
-
-=== Fetching Flight Plan ===
-Flight plan found: KJFK to KLAX
-Distance: 2475 nm
-Aircraft: Boeing 737-800
-Flight time: 05:23
-Route: HAPIE6 HAPIE J80 WILMINGTON J82 LYNCH J134 TUS EAGUL4
+=== Fetching Flight Plan Data ===
+Flight: LKPR → LKPD
+Callsign: CEF007
+Aircraft: A319 (FENIX A319)
+Route: DCT BEKVI BEKV1Q
+Distance: 107 nm
+Planned Fuel: 3979 kgs
+Flight Time: 00:23:03
+  BEKVI  DCT      13500 ft
+  TOC    BEKV1Q   15000 ft
+  GOLIN  BEKV1Q   15000 ft
+  KAFIC  BEKV1Q   15000 ft
+  PD905  BEKV1Q   15000 ft
 ```
 
-## What You'll Learn
+## See also
 
-1. **Basic API Usage**: How to initialize the client and make API calls
-2. **Data Structures**: Understanding the response formats
-3. **Error Handling**: Proper error handling patterns
-4. **Environment Configuration**: Using environment variables for configuration
-5. **Response Parsing**: Extracting useful information from API responses
-
-## Next Steps
-
-After running this example, try:
-
-1. **Modify the code** to filter aircraft by category (Light, Medium, Heavy)
-2. **Add more error handling** for specific error types
-3. **Cache the aircraft data** to avoid repeated API calls
-4. **Explore the advanced example** for flight plan generation
-
-## Related Documentation
-
-- [Main README](../../README.md) - Full SDK documentation
-- [Advanced Example](../advanced/) - Flight plan generation
-- [API Integration Guide](../../docs/api-integration.md) - Best practices
-- [Aircraft Management](../../docs/aircraft-management.md) - Aircraft configuration
+- [Advanced example](../advanced/)
+- [Usage guide](../../docs/usage.md)

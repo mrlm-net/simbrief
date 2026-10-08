@@ -11,7 +11,7 @@ GoLang wrapper for the SimBrief API, allowing Gophers to create flight planning 
 
 ## Table of contents
 
-• [Installation](#installation) • [Usage](#usage) • [Examples](#examples) • [API Reference](#api-reference) • [Debugging](#debugging) • [Advanced Usage](#advanced-usage) • [Contributing](#contributing)
+• [Installation](#installation) • [Usage](#usage) • [Examples](#examples) • [API Reference](#api-reference) • [Troubleshooting](#troubleshooting) • [Documentation](#documentation) • [Contributing](#contributing)
 
 ## Installation
 
@@ -71,8 +71,8 @@ The `examples/` directory contains practical demonstrations of SimBrief features
 
 | Example | Description | Features |
 |---------|-------------|----------|
-| [basic](examples/basic/) | Basic flight plan operations and data retrieval | Get supported aircraft, Fetch existing plans, Basic API usage |
-| [advanced](examples/advanced/) | Complete flight planning with custom parameters | Custom aircraft data, Advanced routing, Detailed fuel planning |
+| [basic](examples/basic/) | Aircraft list, plan URL, latest OFP | Supported options, builder + validation, fetch by user ID, navlog |
+| [advanced](examples/advanced/) | Custom aircraft plan URL, full OFP walk-through | Custom aircraft data, ATC, weights, fuel, weather, alternates, navlog, files |
 
 Run any example:
 
@@ -174,36 +174,30 @@ when exactly one matches.
 
 ```go
 httpClient := &http.Client{Timeout: 60 * time.Second}
-client := client.NewClientWithConfig("https://api.simbrief.com", httpClient)
+c := client.NewClientWithConfig(client.DefaultBaseURL, httpClient)
+c.SetUserAgent("my-app/1.0")
 ```
 
-## Debugging
+## Troubleshooting
 
-Enable detailed HTTP logging and error information:
+The examples read the user to fetch from `SIMBRIEF_USER_ID`:
 
-**Environment Variables:**
 ```bash
-export SIMBRIEF_DEBUG=true          # Enable debug logging
-export SIMBRIEF_USER_ID=your_id     # Set user ID for examples
+export SIMBRIEF_USER_ID=your_id
 ```
 
 **Common issues:**
 
-• **Network connectivity**: Ensure stable internet connection for API access
-• **Invalid aircraft code**: Verify aircraft ICAO codes using `GetSupportedOptions()`
-• **Route validation**: Check route format against SimBrief documentation
-• **Rate limiting**: SimBrief may rate limit requests; implement appropriate delays
+• **Fetch fails with `types.APIError`**: the message is SimBrief's fetch status (unknown user, no plan generated yet)
+• **Invalid aircraft code**: list valid codes with `GetAircraftTypes()`
+• **Empty `TLR`**: the plan was generated without runway analysis, or the aircraft has no `TLRData`
 
 **API Documentation**: [SimBrief API Docs](https://developers.navigraph.com/docs/simbrief/using-the-api)
 
-## Advanced Usage
+## Documentation
 
-For complex scenarios, see [Advanced Documentation](https://github.com/mrlm-net/simbrief/blob/main/docs):
-
-• [Flight Planning](https://github.com/mrlm-net/simbrief/blob/main/docs/flight-planning.md) - Advanced flight plan customization and routing
-• [Aircraft Management](https://github.com/mrlm-net/simbrief/blob/main/docs/aircraft-management.md) - Custom aircraft configurations and performance data
-• [API Integration](https://github.com/mrlm-net/simbrief/blob/main/docs/api-integration.md) - Best practices for API usage and error handling
-• [Performance](https://github.com/mrlm-net/simbrief/blob/main/docs/performance.md) - Optimization and caching strategies
+• [Usage guide](docs/usage.md) - the whole API: client, fetching, the OFP and runway analysis, generating plans, helpers, errors
+• [Changelog](CHANGELOG.md)
 
 ## Contributing
 
