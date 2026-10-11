@@ -7,8 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-11
+
 ### Changed
 
+- Website: docs pages use the full width between the sidebar and the table of contents (no 52rem or 65ch cap on the main content), which looked poor on laptop screens.
 - Docs rewritten to the real API: `docs/usage.md` replaces
   `flight-planning.md`, `api-integration.md`, `performance.md` and
   `aircraft-management.md`, which described functions and types the library

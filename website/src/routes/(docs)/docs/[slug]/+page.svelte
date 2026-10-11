@@ -64,6 +64,6 @@
 
 <style>
 	.doc {
-		max-width: 52rem;
+		max-width: none;
 	}
 </style>

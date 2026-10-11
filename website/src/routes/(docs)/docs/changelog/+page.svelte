@@ -21,7 +21,7 @@
 	path="/docs/changelog"
 />
 
-<article class="mx-auto min-w-0 px-6 py-10 sm:px-10 lg:py-14" style="max-width: 52rem;">
+<article class="mx-auto min-w-0 px-6 py-10 sm:px-10 lg:py-14">
 	<h1 class="mb-2 text-3xl font-semibold tracking-tight" style="color: var(--text);">Changelog</h1>
 	<p class="mb-8 text-sm" style="color: var(--color-text-secondary);">
 		All notable changes to simbrief.
