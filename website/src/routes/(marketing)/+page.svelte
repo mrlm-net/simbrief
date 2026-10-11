@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { base } from '$app/paths';
 	import { siteConfig } from '$lib/config/site.js';
+	import SeoHead from '$lib/components/layout/SeoHead.svelte';
 
 	let copied = $state('');
 
@@ -68,10 +69,7 @@
 	];
 </script>
 
-<svelte:head>
-	<title>simbrief — Go library for SimBrief OFPs</title>
-	<meta name="description" content={siteConfig.description} />
-</svelte:head>
+<SeoHead {siteConfig} title="simbrief — Go library for SimBrief OFPs" description={siteConfig.description} path="/" />
 
 {#snippet arrow()}
 	<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
