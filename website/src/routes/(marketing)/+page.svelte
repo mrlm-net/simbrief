@@ -24,7 +24,7 @@
 		{ label: 'API key', value: 'none' },
 		{ label: 'Packages', value: 'client · types' },
 		{ label: 'Dependencies', value: 'stdlib only' },
-		{ label: 'Go', value: '1.21+' }
+		{ label: 'Go', value: '1.27+' }
 	];
 
 	// Icon paths: 24×24, stroke 1.75
@@ -95,7 +95,7 @@
 	<div class="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[1.25fr_1fr] [&>*]:min-w-0">
 		<div>
 			<div class="mb-6 flex flex-wrap gap-2">
-				<span class="pill"><span class="dot"></span>Go 1.21+ · Cross-platform · SimBrief API</span>
+				<span class="pill"><span class="dot"></span>Go 1.27+ · Cross-platform · SimBrief API</span>
 			</div>
 			<h1 class="mb-5 text-4xl font-semibold tracking-tight sm:text-6xl" style="color: var(--text);">
 				sim<span class="brand-word">brief</span>

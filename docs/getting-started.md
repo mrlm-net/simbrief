@@ -11,7 +11,7 @@ No API key is needed: fetching a plan uses SimBrief's public `/api/xml.fetcher.p
 
 ## Requirements
 
-- Go 1.21 or later
+- Go 1.27 or later
 - An internet connection (for the SimBrief API)
 - A web browser logged in to SimBrief, to generate new plans
 
