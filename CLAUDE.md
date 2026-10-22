@@ -27,7 +27,7 @@ go build ./... && go vet ./... && go test ./...
 
 ## Conventions
 
-- Stdlib only. Never add dependencies (testify is already there for tests only).
+- Stdlib only. Never add dependencies, tests included (assertions are the small helpers in check_test.go).
 - Docs describe the real API only. Every snippet in `docs/*.md` must
   compile: check it in a throwaway module with a `replace` to this repo.
 - OFP numbers are `types.Number`, times stay strings (formats differ by JSON/XML).

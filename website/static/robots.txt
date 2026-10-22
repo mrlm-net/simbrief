@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://simbrief.mrlm.net/sitemap.xml

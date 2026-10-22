@@ -7,8 +7,6 @@ import (
 	"testing"
 
 	"github.com/mrlm-net/simbrief/pkg/types"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // ofpServer serves the golden OFP files the way xml.fetcher.php does:

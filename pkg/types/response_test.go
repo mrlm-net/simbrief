@@ -6,8 +6,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // The golden files are a real OFP (CEF007 LKPR-LKPD, A319) fetched from

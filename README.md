@@ -4,32 +4,30 @@
 [![Docs](https://img.shields.io/badge/docs-simbrief.mrlm.net-3d7a4f)](https://simbrief.mrlm.net/)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-6c7480)](LICENSE)
 
-GoLang wrapper for the SimBrief API, allowing Gophers to create flight planning tools, calculate flight plans, and integrate with SimBrief's comprehensive flight planning services.
+A Go client for the SimBrief API: fetch a pilot's latest OFP (JSON v2 or XML), read its navlog, weights, fuel, weather and runway analysis, and build the URL that generates a new flight plan.
 
 |  |  |
 |--|--|
 | Package name | github.com/mrlm-net/simbrief |
-| Go version | 1.21+ |
+| Go version | 1.27+ |
 | License | Apache 2.0 License |
 | Platform | Cross-platform |
 
-## Table of contents
+## Documentation
 
-• [Installation](#installation) • [Usage](#usage) • [Examples](#examples) • [API Reference](#api-reference) • [Troubleshooting](#troubleshooting) • [Documentation](#documentation) • [Contributing](#contributing)
+Full documentation is at **[simbrief.mrlm.net](https://simbrief.mrlm.net/)**: the client, fetching, the OFP and runway analysis, generating plans, helpers and errors. The sources are in [docs/](docs/getting-started.md); the API reference is on [pkg.go.dev](https://pkg.go.dev/github.com/mrlm-net/simbrief).
 
 ## Installation
-
-I'm using `go mod` so examples will be using it, you can install this package via Go modules.
 
 ```bash
 go get github.com/mrlm-net/simbrief
 ```
 
-**Requirements:**
+Requirements:
 
-• Go 1.21 or higher
-• Internet connection (for SimBrief API access)
-• Web browser (for flight plan generation authentication)
+- Go 1.27 or newer
+- An internet connection (the SimBrief API)
+- A web browser, for generating a new plan (SimBrief signs the user in there)
 
 ## Usage
 
@@ -190,23 +188,28 @@ The examples read the user to fetch from `SIMBRIEF_USER_ID`:
 export SIMBRIEF_USER_ID=your_id
 ```
 
-**Common issues:**
+Common issues:
 
-• **Fetch fails with `types.APIError`**: the message is SimBrief's fetch status (unknown user, no plan generated yet)
-• **Invalid aircraft code**: list valid codes with `GetAircraftTypes()`
-• **Empty `TLR`**: the plan was generated without runway analysis, or the aircraft has no `TLRData`
+- **Fetch fails with `types.APIError`**: the message is SimBrief's fetch status (unknown user, no plan generated yet)
+- **Invalid aircraft code**: list valid codes with `GetAircraftTypes()`
+- **Empty `TLR`**: the plan was generated without runway analysis, or the aircraft has no `TLRData`
 
 **API Documentation**: [SimBrief API Docs](https://developers.navigraph.com/docs/simbrief/using-the-api)
 
-## Documentation
+## Changelog
 
-• [Documentation](https://simbrief.mrlm.net/) - the whole API: client, fetching, the OFP and runway analysis, generating plans, helpers, errors (sources in [docs/](docs/getting-started.md))
-• [Changelog](CHANGELOG.md)
+See [CHANGELOG.md](CHANGELOG.md).
 
 ## Contributing
 
-Contributions are welcomed and must follow Code of Conduct and common [Contributions guidelines](https://github.com/mrlm-net/.github/blob/main/docs/CONTRIBUTING.md).
+Contributions are welcome. They follow the [Code of Conduct](https://github.com/mrlm-net/.github/blob/main/docs/CODE_OF_CONDUCT.md) and the [contribution guidelines](https://github.com/mrlm-net/.github/blob/main/docs/CONTRIBUTING.md). Report bugs and request features in [issues](https://github.com/mrlm-net/simbrief/issues).
 
-> **Security**: If you'd like to report security issue please follow security guidelines.
+## Security
 
-All rights reserved © Martin Hrášek [<@marley-ma>](https://github.com/marley-ma) and WANTED.solutions s.r.o. [<@wanted-solutions>](https://github.com/wanted-solutions)
+To report a vulnerability, follow the [security policy](https://github.com/mrlm-net/.github/blob/main/docs/SECURITY.md); please do not open a public issue for it.
+
+## License
+
+Apache License 2.0, see [LICENSE](LICENSE).
+
+Copyright © Martin Hrášek [<@marley-ma>](https://github.com/marley-ma) and WANTED.solutions s.r.o. [<@wanted-solutions>](https://github.com/wanted-solutions)

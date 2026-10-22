@@ -4,8 +4,6 @@ import (
 	"testing"
 
 	"github.com/mrlm-net/simbrief/pkg/types"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestNewClient(t *testing.T) {
