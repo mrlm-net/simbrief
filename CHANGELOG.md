@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-10-22
+
+### Changed
+
+- Go 1.27. No third-party dependencies: the tests use standard-library helpers instead of testify.
+- README follows the shared layout, with Security, Contributing and License sections.
+
 ## [0.2.2] - 2026-10-11
 
 ### Changed
